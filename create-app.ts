@@ -11,7 +11,7 @@ import { install } from './helpers/install.js';
 import { getOnline } from './helpers/is-online.js';
 import type { PackageManager } from './helpers/get-pkg-manager.js';
 import { tryGitInit } from './helpers/git.js';
-export async function createApp({ appName, packageManager, typescript }: { appName: string, packageManager: PackageManager, typescript: boolean }): Promise<void> {
+export async function createApp({ appName, packageManager, typescript, execContext }: { appName: string, packageManager: PackageManager, typescript: boolean, execContext:string }): Promise<void> {
 
     //step 1. decide project template
     const projectTemplate = typescript ? 'typescript' : 'default';
@@ -19,6 +19,8 @@ export async function createApp({ appName, packageManager, typescript }: { appNa
     //step 2. validate the location 
     const projectPath = resolve(appName); //including application folder.
     const rootDir = dirname(projectPath); // parent path
+
+    console.log(`create-app projectpath = ${projectPath}, rootDir = ${rootDir}`);
 
     //step 3. check whether project path is writable
     if (!isWriteable(rootDir)) {
@@ -89,10 +91,12 @@ export async function createApp({ appName, packageManager, typescript }: { appNa
     console.log();
 
     //Copy project files from local folder
-    console.log('copying to', projectPath);
+    const sourcePath = join(execContext, 'templates', projectTemplate);
+    console.log(`From ${sourcePath}, copying to ${projectPath}`);
+
     await cpy('**', projectPath, {
         parents: true,
-        cwd: join(rootDir, 'templates', projectTemplate),
+        cwd: join(execContext, 'templates', projectTemplate),
         rename: (name) => {
             switch (name) {
                 case 'gitignore':

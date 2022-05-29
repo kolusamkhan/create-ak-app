@@ -1,18 +1,60 @@
-import {resolve, basename} from 'path';
+#!/usr/bin/env node
+import {resolve, basename, dirname, delimiter, join, sep} from 'path';
+import {fileURLToPath} from 'url';
 import chalk from 'chalk';
 import {program} from 'commander';
 import prompts from 'prompts';
 import updateCheck from 'update-check';
-import packageJson from './package.json';
+import {getPackageJson} from './helpers/get-package-json.js';
 import { validateNpmName } from './helpers/validate-pkg.js';
 import { getPkgManager } from './helpers/get-pkg-manager.js';
 import {createApp} from './create-app.js';
-import { create } from 'domain';
+//import fs, {OpenMode} from 'fs';
+
+console.log(`Running version 1.0.50`, delimiter, sep);
+console.log(import.meta);
+const filePath = fileURLToPath(import.meta.url);
+const buildDir = dirname(filePath); //__dirname;
+
+//const arrDirFull = fileDir.split(sep);
+//const arrParentPath = arrDirFull.splice(0, arrDirFull.length - 1);
+
+//const cDir = join(...arrParentPath);
+//const cFile = filePath;
+//const cwd = process.cwd();
+//console.log(chalk.cyan(`cDir = ${cDir}, cFile = ${cFile}, cwd = ${cwd}`));
+
+/*
+
+try {
+    console.log('Listing fiels from directory ', buildDir);
+    console.log()
+    fs.readdirSync(buildDir).map(file=>{
+        console.log(`File read -> ${file}`)
+        console.log()
+    });
+}
+catch (e) {
+    console.log(e)
+}
+*/
+
+let packageJson: any;
+let name:string = 'create-ak-app', version : string = '1.0.0';
+try{
+    packageJson = getPackageJson(buildDir);
+    name = packageJson.name;
+    version = packageJson.version;
+}
+catch(e) {
+    console.error(e);
+}
+console.log(packageJson, name, version);
 
 let projectPath: string = '';
 debugger;
-program.name(packageJson.name)
-    .version(packageJson.version)
+program.name(name)
+    .version(version)
     .arguments('<project-directory>')
     .usage(`<project-directory> [options]`)
     .action((name)=>{
@@ -136,11 +178,12 @@ program.name(packageJson.name)
         console.log(`
         ${chalk.cyan('Package Manager')} ${packageManager}
         `);
-
+       const execContext = buildDir; 
        await createApp({
             appName: projectName,
             packageManager,
-            typescript
+            typescript, 
+            execContext
         });
      }  
 

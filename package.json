@@ -1,8 +1,8 @@
 {
   "name": "create-ak-app",
-  "version": "1.0.1",
+  "version": "1.0.50",
   "description": "CLI for nextjs based rendering template skeleton project.",
-  "bin":  "./dist-esm/index.js",
+  "bin":  "dist-esm/index.js",
   "type": "module",
   "main": "dist-cjs/index.js",
   "module": "dist-esm/index.js",
@@ -11,15 +11,18 @@
     "require": "./dist-cjs/index.js"
   },
   "scripts": {
+    "copy-assets": "node --experimental-json-modules ./bundler-helpers/copy-assets.js",
+
     "debug": "node --inspect-brk --experimental-json-modules ./dist-esm/index.js my-next-app --use-npm",
     "create": "node --experimental-json-modules ./dist-esm/index.js my-next-app",
     "create:dynamic": "node --experimental-json-modules ./dist-esm/index.js ",
-    "clean": "rimraf ./dist-esm ./dist-cjs",
-    "tsc": "tsc",
-    "tsc-cjs": "tsc --p tsconfig-cjs.json",
 
+    "clean": "rimraf ./dist-esm ./dist-cjs",
+
+    "tsc": "tsc  --resolveJsonModule",
+    "tsc-cjs": "tsc --p tsconfig-cjs.json --resolveJsonModule",
     "prerelease": "npm run clean",
-    "release": "npm run tsc",
+    "release": "npm-run-all -s tsc copy-assets",
     "prepublish": "npm run release"
   },
   "repository": {
@@ -36,7 +39,7 @@
     "url": "https://github.com/kolusamkhan/create-ak-app/issues"
   },
   "homepage": "https://github.com/kolusamkhan/create-ak-app#readme",
-  "devDependencies": {
+  "dependencies": {
     "@types/async-retry": "^1.4.4",
     "@types/cross-spawn": "^6.0.2",
     "@types/load-json-file": "^5.1.0",
@@ -69,7 +72,5 @@
     "update-check": "^1.5.4",
     "validate-npm-package-name": "3.0.0"
   },
-  "files": [
-    "dist-*/"
-  ]
+  "bundleDependencies":true
 }

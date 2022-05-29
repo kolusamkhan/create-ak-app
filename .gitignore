@@ -25,6 +25,7 @@ out
 obfuscated
 dist*
 release
-dist
+#dist
 .env
 package-lock.json
+.DS_Store
