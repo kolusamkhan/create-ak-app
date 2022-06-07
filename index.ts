@@ -9,35 +9,11 @@ import {getPackageJson} from './helpers/get-package-json.js';
 import { validateNpmName } from './helpers/validate-pkg.js';
 import { getPkgManager } from './helpers/get-pkg-manager.js';
 import {createApp} from './create-app.js';
-//import fs, {OpenMode} from 'fs';
 
-console.log(`Running version 1.0.50`, delimiter, sep);
-console.log(import.meta);
+//console.log(`Running version 1.0.50`, delimiter, sep);
+//console.log(import.meta);
 const filePath = fileURLToPath(import.meta.url);
 const buildDir = dirname(filePath); //__dirname;
-
-//const arrDirFull = fileDir.split(sep);
-//const arrParentPath = arrDirFull.splice(0, arrDirFull.length - 1);
-
-//const cDir = join(...arrParentPath);
-//const cFile = filePath;
-//const cwd = process.cwd();
-//console.log(chalk.cyan(`cDir = ${cDir}, cFile = ${cFile}, cwd = ${cwd}`));
-
-/*
-
-try {
-    console.log('Listing fiels from directory ', buildDir);
-    console.log()
-    fs.readdirSync(buildDir).map(file=>{
-        console.log(`File read -> ${file}`)
-        console.log()
-    });
-}
-catch (e) {
-    console.log(e)
-}
-*/
 
 let packageJson: any;
 let name:string = 'create-ak-app', version : string = '1.0.0';
@@ -49,7 +25,7 @@ try{
 catch(e) {
     console.error(e);
 }
-console.log(packageJson, name, version);
+//console.log(packageJson, name, version);
 
 let projectPath: string = '';
 debugger;
@@ -58,7 +34,7 @@ program.name(name)
     .arguments('<project-directory>')
     .usage(`<project-directory> [options]`)
     .action((name)=>{
-        console.log('name in action handler', name);
+        //console.log('name in action handler', name);
         projectPath = name
     })
     .option('-ts, --typescript',
@@ -74,6 +50,16 @@ program.name(name)
      .option('--use-pnpm', 
      `
      Explicitly tell the CLI to bootstrap the app using pnpm
+     `
+     )
+     .option('-e, --example [github-url]',
+     `
+      Tell to use github url to initialise the app by -e y or --example yes. 
+     `
+     )
+     .option('--example-path [path-to-example]',
+     `
+      Github url to initialise the app from.
      `
      )
      .allowUnknownOption()
@@ -178,13 +164,60 @@ program.name(name)
         console.log(`
         ${chalk.cyan('Package Manager')} ${packageManager}
         `);
+
+        //Step 4. is github url given for source app
+       let examplePath;
+       if(options.example) {
+           if(!options.examplePath) {
+            const res = await prompts({
+                type: "text",
+                name: "examplePath",
+                message: "What is your example github url ?",
+                initial : "",
+                validate: (name)=>{
+                    console.log('github url entered', name);
+                    return true;
+                    /*const validation = validateNpmName(name);
+                    if(validation.valid)
+                        return true;
+                    return 'Invalid project name :' + validation.problems![0];
+                    */
+                }
+            })
+
+            if(typeof res.examplePath === 'string')
+                examplePath = res.examplePath.trim()
+
+            console.log('Prompts response for example', res.examplePath);
+           }
+           else {
+                examplePath = options.examplePath.trim()
+           }
+       }
+       //debug example, example path
+       //console.info(options);
        const execContext = buildDir; 
-       await createApp({
+       if(!!examplePath) {
+        console.log(`download example from github location ${examplePath}`);
+        await createApp({
             appName: projectName,
             packageManager,
             typescript, 
-            execContext
+            execContext,
+            example: options.example && options.example !== 'default'?options.example: undefined,
+            examplePath
         });
+       }
+       else {
+           await createApp({
+                appName: projectName,
+                packageManager,
+                typescript, 
+                execContext,
+                example: options.example && options.example !== 'default'?options.example: undefined,
+                examplePath
+            });
+       }
      }  
 
      run()

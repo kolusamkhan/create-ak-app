@@ -30,8 +30,12 @@ export async function getRepoInfo(
   if (t === undefined) {
     const infoResponse = await got(
       `https://api.github.com/repos/${username}/${name}`
-    ).catch((e) => e)
+    ).catch((e) => {
+      console.log(`The call to ${`https://api.github.com/repos/${username}/${name}`} got failed with message`, e);
+      return e;
+    })
     if (infoResponse.statusCode !== 200) {
+      console.log(`The call to ${`https://api.github.com/repos/${username}/${name}`} got failed with message`);
       return
     }
     const info = JSON.parse(infoResponse.body)
@@ -60,21 +64,20 @@ export function hasRepo({
   return isUrlOk(contentsUrl + packagePath + `?ref=${branch}`)
 }
 
-export function hasExample(name: string): Promise<boolean> {
-  return isUrlOk(
-    `https://api.github.com/repos/vercel/next.js/contents/examples/${encodeURIComponent(
-      name
-    )}/package.json`
-  )
-}
-
 export function downloadAndExtractRepo(
   root: string,
   { username, name, branch, filePath }: RepoInfo
 ): Promise<void> {
+  const sourceLocation = `https://codeload.github.com/${username}/${name}/tar.gz/${branch}`;
+  const extractOptions = {
+    options: { cwd: root, strip: filePath ? filePath.split('/').length + 1 : 1 },
+    fileList: [`${name}-${branch}${filePath ? `/${filePath}` : ''}`]
+  };
+  console.info(`Downloading tar file from ${sourceLocation}, with options ${JSON.stringify(extractOptions)}`);
+  
   return pipeline(
     got.stream(
-      `https://codeload.github.com/${username}/${name}/tar.gz/${branch}`
+      sourceLocation
     ),
     tar.extract(
       { cwd: root, strip: filePath ? filePath.split('/').length + 1 : 1 },
@@ -83,16 +86,3 @@ export function downloadAndExtractRepo(
   )
 }
 
-export function downloadAndExtractExample(
-  root: string,
-  name: string
-): Promise<void> {
-  if (name === '__internal-testing-retry') {
-    throw new Error('This is an internal example for testing the CLI.')
-  }
-
-  return pipeline(
-    got.stream('https://codeload.github.com/vercel/next.js/tar.gz/canary'),
-    tar.extract({ cwd: root, strip: 3 }, [`next.js-canary/examples/${name}`])
-  )
-}
