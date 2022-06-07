@@ -12,13 +12,13 @@
   },
   "scripts": {
     "copy-assets": "node --experimental-json-modules ./bundler-helpers/copy-assets.js",
-
-    "debug": "node --inspect-brk --experimental-json-modules ./dist-esm/index.js my-next-app --use-npm",
+    
+    "debug": "node --inspect-brk --experimental-modules --experimental-json-modules ./dist-esm/index.js my-next-app --use-npm --example https://github.com/vercel/next.js/tree/canary --example-path examples/amp-first",
+    "debug:v1": "node --inspect-brk --experimental-modules --experimental-json-modules ./dist-esm/index.js my-next-app --use-npm --example https://github.com/kolusamkhan/flight-routes-app",
     "create": "node --experimental-json-modules ./dist-esm/index.js my-next-app",
-    "create:dynamic": "node --experimental-json-modules ./dist-esm/index.js ",
+    "create:dynamic": "node --experimental-json-modules ./dist-esm/index.js my-next-app --use-npm --example y",
 
     "clean": "rimraf ./dist-esm ./dist-cjs",
-
     "tsc": "tsc  --resolveJsonModule",
     "tsc-cjs": "tsc --p tsconfig-cjs.json --resolveJsonModule",
     "prerelease": "npm run clean",
